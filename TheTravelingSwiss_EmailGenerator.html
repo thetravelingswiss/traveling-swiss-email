@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheTravelingSwiss — Email Generator</title>
+<style>
+  :root {
+    --green: #1a2e1a;
+    --gold: #c8a96e;
+    --cream: #f7f2eb;
+    --warm-white: #fdfaf6;
+    --border: #e2d9cc;
+    --text: #2a2218;
+    --muted: #8b7355;
+    --light-gold: #f0e8d8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--green);
+    padding: 20px 36px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  .logo-flag {
+    width: 38px; height: 38px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .logo-text { line-height: 1.2; }
+  .logo-text .sub { color: var(--gold); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; font-family: system-ui, sans-serif; }
+  .logo-text .main { color: #fff; font-size: 18px; }
+
+  .api-section {
+    background: #0f1f0f;
+    padding: 10px 36px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #2a3f2a;
+  }
+
+  .api-section label {
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: system-ui, sans-serif;
+    white-space: nowrap;
+  }
+
+  .api-section input {
+    flex: 1;
+    background: #1a2e1a;
+    border: 1px solid #3a5a3a;
+    color: #aaddaa;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    outline: none;
+    max-width: 500px;
+  }
+
+  .api-section input:focus { border-color: var(--gold); }
+
+  .api-hint {
+    color: #6a8a6a;
+    font-size: 11px;
+    font-family: system-ui, sans-serif;
+  }
+
+  main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--warm-white);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  }
+
+  .panel-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: system-ui, sans-serif;
+  }
+
+  .panel-body { padding: 20px 24px; }
+
+  textarea {
+    width: 100%;
+    min-height: 160px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: system-ui, sans-serif;
+    font-size: 13.5px;
+    color: var(--text);
+    background: var(--cream);
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--gold); }
+  textarea::placeholder { color: #bbb; }
+
+  .btn-generate {
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-generate:hover:not(:disabled) { background: #2a4a2a; }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--muted); }
+
+  /* Keywords section */
+  .keywords-section { margin-top: 24px; }
+
+  .kw-group { margin-bottom: 16px; }
+
+  .kw-group-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: system-ui, sans-serif;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .kw-group-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .kw-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .chip {
+    padding: 4px 11px;
+    background: var(--light-gold);
+    border: 1px solid #ddd0bb;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: system-ui, sans-serif;
+    color: #5a4530;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .chip:hover {
+    background: var(--gold);
+    color: #fff;
+    border-color: var(--gold);
+  }
+
+  /* Right panel — email output */
+  .output-panel { position: sticky; top: 80px; }
+
+  .output-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-copy {
+    padding: 8px 18px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-copy:hover { background: #2a4a2a; }
+  .btn-copy.copied { background: var(--gold); }
+
+  .email-display {
+    padding: 28px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #1a1a1a;
+  }
+
+  .email-display a {
+    color: #1a5e1a;
+    text-decoration: underline;
+  }
+
+  .email-display h3 {
+    margin: 20px 0 6px;
+    font-size: 15px;
+    color: var(--green);
+    font-family: Georgia, serif;
+  }
+
+  .email-display p { margin-bottom: 10px; }
+
+  .email-display ul {
+    margin: 6px 0 12px 20px;
+  }
+
+  .email-display li { margin-bottom: 4px; }
+
+  .placeholder-state {
+    padding: 60px 28px;
+    text-align: center;
+    color: #ccc;
+  }
+
+  .placeholder-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .placeholder-state p { font-family: system-ui, sans-serif; font-size: 14px; }
+
+  .loading-state {
+    padding: 60px 28px;
+    text-align: center;
+  }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-state p {
+    color: var(--muted);
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+  }
+
+  .error-box {
+    margin: 12px 0 0;
+    padding: 12px 16px;
+    background: #fff5f5;
+    border: 1px solid #ffcccc;
+    border-radius: 6px;
+    color: #cc3333;
+    font-size: 13px;
+    font-family: system-ui, sans-serif;
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: #ccc;
+    font-family: system-ui, sans-serif;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* Scrollbar */
+  .email-display::-webkit-scrollbar { width: 6px; }
+  .email-display::-webkit-scrollbar-track { background: var(--cream); }
+  .email-display::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+    .output-panel { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-flag">🇨🇭</div>
+  <div class="logo-text">
+    <div class="sub">TheTravelingSwiss</div>
+    <div class="main">Email Generator</div>
+  </div>
+</header>
+
+<div class="api-section">
+  <label>API Key</label>
+  <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
+  <span class="api-hint">Your Anthropic key — stored only in this browser session</span>
+</div>
+
+<main>
+  <!-- LEFT: Notes input -->
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Notes from call</span>
+      </div>
+      <div class="panel-body">
+        <textarea
+          id="notes"
+          placeholder="e.g. Lucerne 2 nights, Grindelwald 4 nights, JTP + half fare, Jungfraujoch, Lauterbrunnen day, Schilthorn, hotels Grindelwald, restaurants Zermatt, esim, weather links..."
+          oninput="updateCount()"
+        ></textarea>
+        <div class="char-count" id="charCount">0 characters</div>
+
+        <button class="btn-generate" id="generateBtn" onclick="generateEmail()" disabled>
+          <span id="btnText">✉ Generate Email Draft</span>
+        </button>
+
+        <div id="errorBox" class="error-box" style="display:none"></div>
+
+        <!-- Keyword groups -->
+        <div class="keywords-section">
+
+          <div class="kw-group">
+            <div class="kw-group-label">Passes & Logistics</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Swiss Travel Pass')">Swiss Travel Pass</span>
+              <span class="chip" onclick="addKw('Berner Oberland Pass')">Berner Oberland Pass</span>
+              <span class="chip" onclick="addKw('Jungfrau Travel Pass')">Jungfrau Travel Pass</span>
+              <span class="chip" onclick="addKw('Half fare card')">Half fare card</span>
+              <span class="chip" onclick="addKw('Tell Pass')">Tell Pass</span>
+              <span class="chip" onclick="addKw('Peak Pass')">Peak Pass</span>
+              <span class="chip" onclick="addKw('No pass point to point')">No pass</span>
+              <span class="chip" onclick="addKw('SBB app')">SBB app</span>
+              <span class="chip" onclick="addKw('esim Airalo')">eSIM</span>
+              <span class="chip" onclick="addKw('Omio trains outside Switzerland')">Omio</span>
+              <span class="chip" onclick="addKw('SNCF Paris to Zurich')">SNCF Paris</span>
+              <span class="chip" onclick="addKw('Switzerland Travel Center partner')">STC partner</span>
+              <span class="chip" onclick="addKw('weather webcams links')">Weather & webcams</span>
+              <span class="chip" onclick="addKw('TooGoodToGo app')">TooGoodToGo</span>
+              <span class="chip" onclick="addKw('Booking.com link')">Booking.com</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Jungfrau Region</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Jungfraujoch')">Jungfraujoch</span>
+              <span class="chip" onclick="addKw('Grindelwald First cliff walk Bachalpsee')">Grindelwald First</span>
+              <span class="chip" onclick="addKw('Männlichen Royal Walk')">Männlichen</span>
+              <span class="chip" onclick="addKw('Schynige Platte')">Schynige Platte</span>
+              <span class="chip" onclick="addKw('Lauterbrunnen day Mürren Trümmelbachfälle')">Lauterbrunnen day</span>
+              <span class="chip" onclick="addKw('Schilthorn 007 Thrill Walk')">Schilthorn</span>
+              <span class="chip" onclick="addKw('paragliding Mürren Airtime')">Paragliding Mürren</span>
+              <span class="chip" onclick="addKw('Harder Kulm dinner')">Harder Kulm</span>
+              <span class="chip" onclick="addKw('Lake Brienz boat Brienzer Rothorn Ballenberg')">Lake Brienz day</span>
+              <span class="chip" onclick="addKw('Lake Thun bus castle')">Lake Thun</span>
+              <span class="chip" onclick="addKw('Oeschinensee Kandersteg')">Oeschinensee</span>
+              <span class="chip" onclick="addKw('Rosenlaui valley Meiringen')">Rosenlaui</span>
+              <span class="chip" onclick="addKw('Schynige Platte cogwheel ridge hike')">Schynige Platte</span>
+              <span class="chip" onclick="addKw('Glacier Express Bernina Express seat reservation')">Glacier/Bernina Express</span>
+              <span class="chip" onclick="addKw('Lucerne Interlaken Express seat reservation')">Lucerne–Interlaken Express</span>
+              <span class="chip" onclick="addKw('cheese making Mürren Wednesday')">Cheese making Mürren</span>
+              <span class="chip" onclick="addKw('hotels Grindelwald')">Hotels Grindelwald</span>
+              <span class="chip" onclick="addKw('restaurants Grindelwald')">Restaurants Grindelwald</span>
+              <span class="chip" onclick="addKw('hotels Lauterbrunnen')">Hotels Lauterbrunnen</span>
+              <span class="chip" onclick="addKw('hotels Wengen restaurants')">Hotels/restaurants Wengen</span>
+              <span class="chip" onclick="addKw('restaurants Interlaken')">Restaurants Interlaken</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Lucerne Region</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Lucerne old town Chapel Bridge walls Lion')">Lucerne city</span>
+              <span class="chip" onclick="addKw('Pilatus boat toboggan')">Pilatus</span>
+              <span class="chip" onclick="addKw('Rigi Kulm historic train Vitznau boat')">Rigi</span>
+              <span class="chip" onclick="addKw('Stoos Fronalpstock ridge hike steepest funicular')">Stoos</span>
+              <span class="chip" onclick="addKw('Titlis Engelberg cliff walk glacier cave')">Titlis/Engelberg</span>
+              <span class="chip" onclick="addKw('Stanserhorn candlelight dinner')">Stanserhorn dinner</span>
+              <span class="chip" onclick="addKw('Kambly factory experience free')">Kambly</span>
+              <span class="chip" onclick="addKw('hotels Lucerne')">Hotels Lucerne</span>
+              <span class="chip" onclick="addKw('restaurants Lucerne Château Gütsch Montana')">Restaurants Lucerne</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Zermatt</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Gornergrat Riffelsee Matterhorn views')">Gornergrat</span>
+              <span class="chip" onclick="addKw('Matterhorn Glacier Paradise Schwarzsee Gorner Gorge')">Glacier Paradise</span>
+              <span class="chip" onclick="addKw('5 Lakes hike Sunnegga Blauherd Chez Vrony')">5 Lakes hike</span>
+              <span class="chip" onclick="addKw('hotels Zermatt')">Hotels Zermatt</span>
+              <span class="chip" onclick="addKw('restaurants Zermatt Schäferstübe')">Restaurants Zermatt</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Zurich</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Zurich old town Lindenhof Augustinergasse Polybahn')">Zurich city</span>
+              <span class="chip" onclick="addKw('Lindt Home of Chocolate Kilchberg reserve')">Lindt museum</span>
+              <span class="chip" onclick="addKw('Rheinfalls Neuhausen Schaffhausen')">Rheinfalls</span>
+              <span class="chip" onclick="addKw('Rapperswil boat castle rose garden')">Rapperswil</span>
+              <span class="chip" onclick="addKw('Uetliberg mountain train')">Uetliberg</span>
+              <span class="chip" onclick="addKw('hotels Zurich')">Hotels Zurich</span>
+              <span class="chip" onclick="addKw('restaurants Zurich Bauschänzli Brasserie Lipp')">Restaurants Zurich</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Bern & Day Trips</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Bern old town Zytglogge Federal Palace bears Gurten')">Bern city</span>
+              <span class="chip" onclick="addKw('Gruyères Maison du Gruyère fondue Maison Cailler')">Gruyères</span>
+              <span class="chip" onclick="addKw('Murten old town lake cruise Avenches')">Murten</span>
+              <span class="chip" onclick="addKw('Biel Cité du Temps Omega Swatch watches')">Biel / watches</span>
+              <span class="chip" onclick="addKw('hotels Bern')">Hotels Bern</span>
+              <span class="chip" onclick="addKw('restaurants Bern Rosengarten Old Tram Depot')">Restaurants Bern</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Geneva & Romandy</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Geneva old town Cathedral Mouettes ChocoPass Carouge')">Geneva city</span>
+              <span class="chip" onclick="addKw('Yvoire boat Restaurant du Port filets de perches')">Yvoire</span>
+              <span class="chip" onclick="addKw('Annecy train old town canals')">Annecy</span>
+              <span class="chip" onclick="addKw('Chamonix Aiguilles du Midi Mer de Glace')">Chamonix</span>
+              <span class="chip" onclick="addKw('Montreux Lavaux vineyards Route de la Corniche Chillon Castle')">Montreux & Lavaux</span>
+              <span class="chip" onclick="addKw('Lausanne Cathedral Ouchy Olympic Museum Flon')">Lausanne</span>
+              <span class="chip" onclick="addKw('hotels Geneva')">Hotels Geneva</span>
+              <span class="chip" onclick="addKw('restaurants Geneva Bains des Pâquis fondue')">Restaurants Geneva</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">St Moritz & Engadin</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('St Moritz Engadin villages Muottas Muragl Diavolezza')">St Moritz</span>
+              <span class="chip" onclick="addKw('Glacier Express seat reservation Landwasser Viaduct')">Glacier Express</span>
+              <span class="chip" onclick="addKw('Bernina Express St Moritz Tirano Milan reservation')">Bernina Express</span>
+              <span class="chip" onclick="addKw('Palm Express Lake Como St Moritz Menaggio')">Palm Express / Lake Como</span>
+              <span class="chip" onclick="addKw('hotels restaurants St Moritz Waldhaus Gondolezza')">Hotels/restaurants St Moritz</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Ticino & South</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Lugano Monte Bre San Salvatore Morcote paddle boat')">Lugano activities</span>
+              <span class="chip" onclick="addKw('Locarno Ascona Valle Verzasca Foroglio Centovalli')">Locarno & Ascona</span>
+              <span class="chip" onclick="addKw('hotels Lugano Locarno')">Hotels Ticino</span>
+              <span class="chip" onclick="addKw('restaurants Lugano Piazza della Riforma')">Restaurants Lugano</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Basel & Gstaad</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('Basel Läkerli Cathedral Rhein museums Tinguely')">Basel city</span>
+              <span class="chip" onclick="addKw('hotels Basel')">Hotels Basel</span>
+              <span class="chip" onclick="addKw('Gstaad Wispile Saanen Rougemont Lake Lauenen fondue backpack')">Gstaad</span>
+            </div>
+          </div>
+
+          <div class="kw-group">
+            <div class="kw-group-label">Food & Culture</div>
+            <div class="kw-chips">
+              <span class="chip" onclick="addKw('best dishes to try fondue raclette rösti')">Best dishes</span>
+              <span class="chip" onclick="addKw('chocolate Sprüngli Läderach Cailler')">Chocolate</span>
+              <span class="chip" onclick="addKw('good wine Petite Arvine Heida Dezaley')">Wine</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Email output -->
+  <div class="panel output-panel">
+    <div class="panel-header">
+      <span class="panel-title">Draft Email</span>
+      <div class="output-actions" id="outputActions" style="display:none">
+        <button class="btn-secondary" onclick="generateEmail()">↺ Regenerate</button>
+        <button class="btn-copy" id="copyBtn" onclick="copyEmail()">Copy email</button>
+      </div>
+    </div>
+    <div id="emailOutput">
+      <div class="placeholder-state">
+        <div class="icon">✉</div>
+        <p>Your draft email will appear here.<br>Add keywords above and click Generate.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ============================================================
+// LIBRARY — embedded from your Google Doc
+// ============================================================
+const LIBRARY = `
+PASSES & LOGISTICS:
+
+Swiss Travel Pass (STP): We recommend the Swiss Travel Pass for your trip. You can reserve it here: https://www.getyourguide.com/central-switzerland-l82/switzerland-swiss-all-in-one-travel-pass-t383502/?partner_id=XQNA3RS&utm_medium=online_publisher&cmp=youtube
+If you download the GetYourGuide app, and use the code THETRAVELINGSWISS5, booking on the app using the link above after the app is downloaded, you can get 5% discount on the Swiss travel passes. You can save a good amount!
+
+Berner Oberland Pass (BOP): We recommend the Berner Oberland Pass. Reserve with this link: https://www.getyourguide.com/interlaken-l793/switzerland-berner-oberland-regional-pass-in-2nd-class-t427230/?partner_id=XQNA3RS&cmp=CL
+The link already has the discounted option. Make sure to also get the Swiss Half fare card.
+
+Jungfrau Travel Pass (JTP): We recommend the Jungfrau Travel Pass: https://www.getyourguide.com/interlaken-l793/bernese-oberland-jungfrau-travel-pass-3-to-8-days-t186699/?partner_id=XQNA3RS&cmp=CL
+I would start it on your second day in the region, as it does not cover Pfingstegg. Make sure to also get the Swiss Half fare card.
+
+Half fare card: https://www.getyourguide.com/zurich-l55/swiss-half-fare-card-t574987/?partner_id=XQNA3RS&cmp=CL
+If you download the GetYourGuide app, and use the code THETRAVELINGSWISS5, you can get 5% discount on the Half fare cards. You can save a good amount!
+
+Tell Pass: We recommend the Tell Pass for your stay around Lucerne.
+
+Peak Pass: You can buy the Peak Pass in Zermatt or online: https://www.matterhornparadise.ch/en/book/tickets/peak-pass
+Don't forget the half fare reduction when you book or buy it in Zermatt.
+
+No pass / point to point: For the journey, you can simply get point to point tickets, either on the SBB website or the SBB Mobile app: https://www.sbb.ch/en/tickets-offers/tickets/point-to-point-tickets-switzerland/individual-tickets.html
+
+SBB app: Important App to download: the SBB Mobile app for all the public transportation schedules. We have made a video about how to use the SBB app.
+
+eSIM Airalo: We recommend Airalo for eSIM. Get $3 off your eSIM today: https://try.airalo.com/TheTravelingSwiss
+
+Omio: For trips outside of Switzerland, you can get your tickets on Omio.com — You can even get a 12% discount with the code SWISS12.
+
+SNCF Paris to Zurich: For tickets from Paris to Zurich, get your tickets on SNCF Connect: https://www.sncf-connect.com/en-en/
+
+Switzerland Travel Center partner: If you are interested in our partner to book the trains and hotels, let us know and we will get in touch with Switzerland Travel Center. They are particularly good as they have some preferred access to the Glacier Express seats. You can also contact them directly: sales@stc.co.uk & Andrea.Dulanska@stc.co.uk
+
+Weather links: Weather websites:
+- https://www.meteoblue.com/en/weather/week/geneva_switzerland_2660646
+- https://www.meteosuisse.admin.ch/services-et-publications/applications/precipitations.html (particularly useful for a minute by minute map of the rain)
+Webcams: https://www.jungfrau.ch/de-ch/live/webcams/
+
+TooGoodToGo: We also recommend the TooGoodToGo app for food. Reserve the evening before to make sure to have more choices.
+
+Booking.com: https://www.booking.com/searchresults.en.html?iata=ZRH&aid=8039031&no_rooms=1&group_adults=2&room1=A%2CA
+
+LUCERNE:
+
+Lucerne city: Time in Lucerne: See the Chapel Bridge, the old town, the walls of Lucerne, the Lion of Lucerne and the Glacier Garden. If it rains, consider the Transportation Museum. We like the Rathaus Brauerei or Pfistern restaurants. In the evening, you could go to the Château Gütsch for a drink — walk to their elevator, go up and have a drink with a view on Lucerne. We also love the rooftop bar next to the train station, on top of the Hotel Monopol.
+
+Hotels Lucerne: Hotel des Alpes — Hotel des Balances — Hotel Ameron Lucerne — Lubo Hotel — Hotel Monopol (great rooftop). For a spa, the Grand Hotel National is an option. Art Deco Hotel Montana with a splendid view on the Lake. For something unique, the Château Gütsch overlooking Lucerne.
+
+Restaurants Lucerne: Château Gütsch for a drink with a view on Lucerne. Restaurant at the Montana hotel with their little funicular. Rooftop bar on top of Hotel Monopol. Restaurants Pfistern and Rathaus Brauerei (also a brewery!). For dinner, you could do a dinner cruise (boats are included in the Swiss Travel Pass). Reserve here: https://www.lakelucerne.ch/en/your-cruise-experience/offers-tickets/culinary-cruises/sunset-cruise/
+
+Lucerne–Interlaken Express: You can reserve seats on the Lucerne-Interlaken Express Panoramic train, if you want to make sure you'll have good seats together. Here is the link to reserve the seats: https://shop.luzern.com/en/products/sitzplatzreservation-zb — You don't need to, but in the summer, it can get a bit more crowded.
+
+Pilatus: Take the boat from Lucerne to Alpnachstad. Boats depart at 9:38am and 10:38am. Enjoy a scenic boat ride on Lake Lucerne before taking an even more scenic funicular all the way up to the Pilatus Kulm. You can book the ticket "Alpnachstad to Kriens" — the boat and the bus at the end will be included in the Swiss Travel Pass. At the top, you might have some alphorn playing, and you will have incredible views on the Alps and Lake Lucerne. Have lunch at the top of the Pilatus, or in Fräkmüntegg. After lunch, take the Dragon Ride down to Fräkmuntegg. In Fräkmüntegg you can enjoy the exciting longest toboggan in Switzerland — it is located 5 minutes up from the intermediary station. Then get back down to Kriens and then Lucerne by bus.
+
+Rigi Kulm: Head to the Rigi Kulm via Arth Goldau, have a beautiful view from up there, and then take a funicular down to Vitznau and then a boat to Lucerne. There are some historic trains that take you up from Arth Goldau on Wednesdays.
+
+Stoos: Head to Stoos from Lucerne by taking a train to either Schwyz or Arth Goldau and taking the bus 501 to the Stoosbahn stop. Then take the funicular (included in the Swiss Travel Pass), and then take the chair lifts to the Fronalpstock. You can enjoy the views, walk along the ridge and do the 2.5 hours hike to Klingenstock via the panorama hike.
+
+Titlis/Engelberg: Take the train to Engelberg (every '10) from platform 12. Walk or take the shuttle bus to the Titlis gondola terminal. Take the gondola up, then change for the rotating gondola to reach Mount Titlis. At the top, experience the Titlis Cliff Walk — incredible views. You can also walk in the Titlis Glacier Cave. For lunch, we recommend the Panoramic restaurant Mount Titlis (reserve in advance). At intermediary station Trübsee, hop off for a short hike around the lake. In the village, go to Dorfstrasse for a great view. Visit the Benedictine Monastery built in 1120.
+
+Stanserhorn candlelight dinner: You can do the candlelight dinner at the Stanserhorn. Take a train from Lucerne to Stans, and then go up to the top with a funicular and then the Cabrio gondola. It will be included in the Swiss Travel Pass.
+
+Kambly factory experience: From Lucerne to Bern, you could stop at Trubschachen at the Kambly Experience (free). It is on the train line between Lucerne and Bern — a nice 1 hour stop!
+
+GRINDELWALD & JUNGFRAU REGION:
+
+Grindelwald First: Go up to Grindelwald First, experience the cliff walk and then hike to the Bachalpsee Lake (about 1 hour - 1.5 hour to get there.) Then do the fun activities — Zipline, mountain kart and scooter to get down the mountain. To beat the crowds, go up and experience the activities first after the cliff walk, then go back up with the gondola to do the hike. After Grindelwald First, consider the Pfingstegg gondola for a great toboggan run. We also love walking around in the green hills near the village — take bus 123 towards Itramen Egg and walk back facing Grindelwald. Walks in the village: follow the street "Im Misti" or "Bodmiweg" for beautiful views in just 10 minutes.
+
+Jungfraujoch: Go to Grindelwald Terminal, take the Eiger Express, and then the final train to the top. If you go early in the morning, you can benefit from an Early Bird discount: https://www.jungfrau.ch/en-gb/jungfraujoch-top-of-europe/good-morning-ticket/ — A seat reservation is recommended, especially during peak seasons — book in advance: https://www.jungfrau.ch — At the top: the Ice Palace, the Sphinx Observation Deck with panoramic views over the Aletsch Glacier.
+
+Männlichen Royal Walk: Take the gondola to the Männlichen from Wengen or Grindelwald Terminal. Do the Royal Walk to the peak (20 minutes). You will have the best view of the entire region from there.
+
+Schynige Platte: Take a train to Wilderswil, between Lauterbrunnen and Interlaken. There, take the old cogwheel train all the way up. There are alphorn playing between 11am and 2pm, an alpine garden with Edelweiss flowers, and a ridge hike. The ridge hike is easy, without much elevation gain, and you'll have beautiful lake views after 20-25 minutes. Panorama hike info: https://www.jungfrau.ch/en-gb/schynige-platte/panorama-hike/
+
+Lauterbrunnen day: Take the gondola to the Männlichen, do the Royal Walk on the top and then take the gondola down to Wengen. Go see the view by the Church. Then take the train down to Lauterbrunnen. Walk in the village and in the valley on the pedestrian path close to the waterfalls until the Trümmelbachfälle (waterfalls inside the mountain). Continue by foot or by bus to Stechelberg. Take a gondola to Mürren from Stechelberg — visit the cute little village of Gimmelwald with self-service fridges by farmers of the region. Visit Mürren. You could also head up to the Schilthorn (007 mountain) and stop in Birg intermediary station for the Thrill walk. Head back to Lauterbrunnen with the BLS train to Grütschalp on the other side of Mürren. Take the gondola down to Lauterbrunnen. Also in Lauterbrunnen for a short walk — an easy 15 minutes uphill walk for an incredible view with nobody.
+
+Schilthorn 007 Thrill Walk: Go up to the Schilthorn from Mürren. 007 museum at the top and incredible 360° views. On the way down, stop at Birg intermediary station to experience the Thrill Walk and other views on the Eiger.
+
+Paragliding Mürren: You could try paragliding with Airtime Paragliding from Mürren. You can paraglide from Mürren to the valley.
+
+Harder Kulm: Go to the Harder Kulm with the funicular and have dinner on the top with a great view. The funicular is near the Interlaken Ost train station, on the other side of the river. Open until 9:40pm typically.
+
+Lake Brienz day: Take a boat from Interlaken Ost (next to the train station) to Brienz (We recommend the 11:07am or 2:07pm boat). Boat schedule 2026: https://www.bls-schiff.ch/sites/default/files/2025-12/timetable_bls_schifffahrt_2026.pdf — You can stop at the Giessbach waterfalls — nice restaurant at the Giessbach Hotel, Elisa Terrace. In Brienz, go see the Brungasse street. We recommend the Brienzer Rothorn — reserve seats in advance. From Brienz, take bus 151 to Ballenberg (Swiss outdoor museum) and the Trauffer World Experience. For dinner, go to the Harder Kulm.
+
+Lake Thun bus castle: Take the bus 21 around Lake Thun and stop at the St Beatus caves, the Oberhofen castle, and finally in Thun to visit the city. In Thun, walk in the old town on the Obere Hauptgasse street, to the Rathaus Platz. Walk up to the castle. Perfect for a cloudy/rainy day. Then get back to Interlaken by train from Thun.
+
+Oeschinensee Kandersteg: Take the train from Interlaken to Spiez, and then from Spiez to Kandersteg. Walk towards the Oeschinensee Gondola (10 min) and take the gondola. Then walk 15 minutes towards the Lake. Hike around the Oeschinensee Lake. You can also choose the longer hike with the Oberbärgli loop (3 hours). After the hike, relax by the lake. Experience the toboggan/luge before going back down. Then head back to Spiez and take a boat on Lake Thun. Schedule: https://www.bls-schiff.ch/sites/default/files/2026-04/fahrplan_bls_schifffahrt_2026_2.pdf
+
+Rosenlaui valley: Take a train to Meiringen, and then the bus up there. I particularly love the view from the valley by the bus stop Gschwandtenmaad. Walk up to the canyon. Then take the bus to Grindelwald to enjoy the views from Grosse Scheidegg.
+
+Cheese making Mürren Wednesday: In Mürren, you can experience an authentic cheese making experience on Wednesdays. Reserve in advance here: https://shop.e-guma.ch/sportzentrum-muerren/en/tickets/visit-to-an-alpine-cheese-dairy-with-breakfast-3639968
+
+Glacier Express Bernina Express seat reservation: The basic fare will be covered by the Swiss Travel Pass. You will need a seat reservation: https://shop.glacierexpress.ch/gex_en/specials/daytrips/glacier-express — Select "seat reservation only" or "Swiss Travel Pass" option. Contact: railservice@rhb.ch — We recommend going from Zermatt to Filisur to experience the Landwasser Viaduct, then catch a normal train back to Chur and to Zürich.
+
+Hotels Grindelwald: Hotel Belvedere — Hotel Kreuz & Post — Hotel Spinne — Hotel Romantik Schweizerhof — Hotel Sunstar (use code Sunstar10 for 10% off)
+
+Restaurants Grindelwald: Belvedere fondue gondola (reserve in advance, available at 2, 4, 6 and 8pm) — Adlerstube Restaurant — Hotel Kreuz & Post restaurant — Restaurant Derby — Avocado Bar for drinks. Spa: Belvedere Hotel spa.
+
+Hotels Lauterbrunnen: Hotel Staubach — Hotel Silberhorn
+
+Hotels Wengen restaurants: We absolutely love the Maya Caprice Hotel in Wengen, close to the train station and with the best view on the Lauterbrunnen valley. Restaurant 1903 at hotel Schönegg — Jack's Brasserie — Chez Meyer's — Grand Hotel Belvedere.
+
+Restaurants Interlaken: Restaurant Salzano — Harder Kulm restaurant with a great view — Funky Chocolate club for hot chocolate or a class — Hüsi Bierhaus restaurant — Velo Café — Restaurant Taverne — Dinner cruise on Lake Thun (6:10pm boat from Interlaken West, reserve in advance).
+
+ZERMATT:
+
+Zermatt Gornergrat: We recommend the Gornergrat and Matterhorn Glacier Paradise for the full day in Zermatt. First, take the Gornergrat train in the morning, and sit on the right side of the train. On the way to the top, stop in Rotenboden to take a short hike down to the Riffelsee (reflection lake — about 20 minutes down, 30 minutes back up). Then ride until the top and enjoy the amazing views on glaciers and the Matterhorn. Try the Zooom the Matterhorn VR paragliding activity. Track the blacknose sheep: https://www.gornergrat.ch/en/stories/meet-the-sheep
+On the way down, go to Riffelberg and take the Riffelberg Express gondola towards Furi, from where you can take gondolas to the Matterhorn Glacier Paradise.
+
+Matterhorn Glacier Paradise: Walk along the river all the way to the gondola station, and take the gondolas all the way up. You could try the Alpine Crossings and go to Italy from Trockener Stegg. On the way down, hike from Furi to Zermatt. Make sure to stop by at intermediary stations for the views, especially Schwarzsee. At the end of the day, go to the Gorner Gorge close to the bottom gondola station.
+
+5 Lakes hike Sunnegga: The 5 Lakes hike is beautiful. Take the Sunnegga funicular and then the gondola to Blauherd, before doing the 2.5 hours hike back to Sunnegga throughout 5 lakes. Back down to Sunnegga, you can hike down to Chez Vrony (reserve in advance). I also like the walk on the heights of Zermatt towards the Champagne Bar on Gourmetweg — amazing views.
+
+Hotels Zermatt: Riffelalp Resort — Grand Hotel Zermatterhof — Hotel Tradition Julen — The Omnia — Schloss Hotel CDB — Hotel Ambiance — Hotel Butterfly — Hotel Spa Backstage — Hotel Bristol
+
+Restaurants Zermatt: Schäferstübe (definitely reserve in advance) — Brasserie Uno — Restaurant du Pont — SayCheese — Swiss Chalet Restaurant.
+
+ZURICH:
+
+Zurich city: We recommend the Lindenhof view and strolling in the old town. We love the Augustinergasse colorful street. We recommend the Archaeological Windows — keys can be collected from the Stadthaus building, Stadthausquai 17, 8001 Zurich. Take the Polybahn funicular from Central to the ETH university and the Polyterrasse for another great view on the city and the lake. Take a river cruise from the Landesmuseum for a beautiful short experience (30 minutes). Uetliberg mountain is easily accessible with a direct train from Zurich HB. You can get the Zurich Card for your time in Zurich.
+
+Lindt Home of Chocolate Kilchberg: Make sure to reserve timed tickets in advance. Take the train from Zurich to Kilchberg ZH then walk 10 minutes to the museum. Trains every '07, '21, '37, '51. Or take a boat from Burkliplatz at 10:30am.
+
+Rheinfalls Neuhausen Schaffhausen: 40 min train ride to Neuhausen Rheinfalls. Walk around and see the Rheinfalls. Continue to Schaffhausen (cute little city).
+
+Rapperswil boat castle: Take a boat from Zurich to Rapperswil — cruises at 11:20am and 1:20pm from Bürkiplatz. In Rapperswil, visit the old streets, the castle, and the rose garden. Get back to Zurich by train.
+
+Uetliberg mountain train: Uetliberg mountain is easily accessible from Zurich with a direct train ride up from Zurich HB (S10 train, different part of the train station). Once at the top, walk 10 minutes to the summit for amazing views of Zurich and the Alps. Great especially at sunset.
+
+Hotels Zurich: Ruby Mimi Hotel — Schweizerhof — Limmatblick hotel — Townhouse Boutique Hotel — Hotel Adler in the old town (great fondue restaurant downstairs).
+
+Restaurants Zurich: UTO Kulm (top of Uetliberg) — Bauschänzli (beer garden on the river) — Brasserie Lipp (French) and Jules Vernes lounge upstairs with a great view — Kronenhalle (classic, on the expensive side) — Frau Gerolds Garten (open air for drinks and food, fun at night) — Fischerstübe Zurihorn (great lake views) — Hiltl and Tibits (great vegetarian restaurants and buffets) — Miss Miu Europaalle (Korean).
+
+BERN:
+
+Bern city: Walk in the old town following Spitalgasse and Marktgasse. Stop by the Zytglogge and the Bundesrat — Federal Palace (Swiss Capitol, reserve 3 days in advance). From the Bundesrat, beautiful view on the alps. Continue down until the bridge — see the famous Bern bears (Bärengraben). Continue up 100 meters on Grosser Muristalden for a beautiful view, or go to the Rosengarten (rose garden). Lunch by the bears or at the Rose Garden. Gurten Hill: take tram 9 to Wabern bei Bern and the funicular — miniature trains and mountain coaster at the top, superb view on Bern and the alps.
+
+Hotels Bern: Hotel Savoy — Hotel Bären — Hotel Schweizerhof
+
+Restaurants Bern: Moment-Bern or Casa Novo (ask for the terrace). Rosengarten restaurant or Old Tram Depot restaurant (also a brewery, unbeatable views on the old town).
+
+Gruyères Maison du Gruyère: Day trip to Gruyères. Go to the Maison du Gruyère museum, and then have a fondue in the medieval village on the top of the hill. Visit the castle and then go to the Maison Cailler chocolate experience (about 15 minutes away). From Broc, direct trains back.
+
+Murten old town lake cruise: Cute village of Murten — direct trains from Bern. Explore the old town, walk up to the city walls, try the Niederkuchen cake at the Aebersold bakery. Walk down to the Lake, take a little cruise. Nearby: Roman city of Avenches.
+
+Biel watches Cité du Temps: Head to Biel and the Cité du Temps — a museum from Omega and Swatch. The old town of Biel is also nice. Watch manufactures: Panerai in Neuchâtel on Thursdays: https://watchexplorer.swiss/visite-de-la-manufacture-panerai/ — Zenith in Le Locle on Fridays: https://www.zenith-watches.com/int/brand/visit-the-manufacture
+
+GENEVA & ROMANDY:
+
+Geneva city: Old town with the view from the Cathedral towers. Walk by the Lake — take some of the "Mouettes", the yellow boats crossing the lake. ChocoPass (reserve tickets in advance) — great way to walk around and try lots of chocolate. Carouge is cute — accessible by tram. Musée Patek Philippe (watches, in case of rain). Markets on Wednesdays and Saturdays near Halles de Rive.
+
+Yvoire boat: Leave at 10:45am from Genève Mont Blanc and eat in Yvoire. We recommend eating filets de perches meunières at the Restaurant du Port (reserve in advance). Then visit the village and take the 4:35pm boat back.
+
+Annecy train: Take the 9:47am or 10:47am SL2 train to Annecy from Geneva main train station. Walk towards the old town. For lunch, any restaurant by the Thiou Canal on the Quai de l'Evêché. Walk by the canals — "the Alp's Venice". See the Palais de l'île. Enjoy the Jardin de l'Europe. Take the train back at 4:44pm, 5:44pm or 6:44pm.
+
+Chamonix Aiguilles du Midi: Take a bus from Geneva to Chamonix from the gare routière. Head to the Aiguilles du Midi gondola — views from more than 3800 meters/11'000 feet. Lunch at the restaurant Le 3842 at the top. In the afternoon, take the Montenvers train to see the glacier Mer de Glace. The 3pm train is the last one to visit the Ice Cave.
+
+Montreux Lavaux vineyards: Head to the Lavaux vineyard region. Drive on the Route de la Corniche after St Saphorin. Stop in Rivaz, Cully or Epesses for wine tasting — the Clos de la République in Epesses is great. Great restaurant in the area: Le Deck (reserve in advance). Also try the Café du Raisin, very traditional. You could also drive by the Chillon Castle, very close to Montreux.
+
+Lausanne Cathedral Ouchy Olympic Museum: Take a direct train to Lausanne. Take the metro to Riponne Maurice Béjart. Walk up to the Cathedral, enjoy the views on the lake and the city. Walk down the Escaliers du Marché in the Old Town. See the Place de la Palud. Lunch at the Great Escape, the Pointu restaurant, or restaurant La Terrasse / L'Accadémia. Walk around the Lake in Ouchy. Visit the Olympic Museum. Walk up to the Esplanade de Montbenon. Dinner at the Brasserie de Montbenon. Evening: Flon neighborhood, Bleu Lézard or Chorus Jazz club.
+
+Hotels Geneva: Hotel les Armures in the old town — Hotel d'Angleterre — Hotel Beau Rivage — Hotel Bernina (near train station) — Hotel Metropole — Hotel Eastwest — Hotel Cornavin
+
+Restaurants Geneva: Restaurant Les Armures (reserve in advance) — Bains des Pâquis (great fondue) — Restaurant du Remor (make your own fondue!) — The Cottage — Carouge area: Le Flacon or L'écorce (reserve in advance). Eat "filets de perches". Try "Malakoff" if you see it on a menu.
+
+ST MORITZ & ENGADIN:
+
+St Moritz Engadin villages: We love the villages of Zuoz, Pontresina, Bergün and Filisur — all accessible by train or bus. Walk along the Lake in front of St Moritz. Go to the lakes of Silvaplana and the Silersee. Muottas Muragl funicular — amazing views on 3 lakes, good hiking at the top. Diavolezza Glacier is impressive.
+
+Palm Express Lake Como: From St Moritz, take the Palm Express bus directly to Menaggio and take a boat to Bellagio or other places in Lake Como. Covered by the Swiss Travel Pass (seat reservation needed).
+
+Hotels restaurants St Moritz: Hotel Waldhaus am See (by the lake and the train station). Restaurants: Dal Mulin — The View (fancy, beautiful view on the lake). In Pontresina: Gondolezza (great cheese dishes, in an old gondola).
+
+TICINO:
+
+Lugano activities: Monte Bre funicular (amazing view). Monte San Salvatore funicular. Morcote — beautiful village near Lugano, Scherer garden (free), walk up to the church. Paddle Boat on Lake Lugano. Monte Tamaro for toboggan run — train to Rivera-Bironico.
+
+Locarno Ascona Valle Verzasca Foroglio: One day around Locarno and Ascona. We recommend either the Valle Verzasca with the ponte dei Salti — beautiful. Or the valley of Foroglio and Fontana. Centovalli valley — train from Locarno or by car. Brissago Island and its botanical garden by boat. Lunch or dinner in Ascona on the lake front.
+
+Hotels Lugano: Hotel Walter au Lac — Boutique Hotel Luganodante — Continental Parkhotel
+
+Hotels Locarno: Hotel Lago Maggiore — Boutique Hotel Piazza Grande — Hotel Geranio au Lac
+
+Restaurants Lugano: Piazza della Riforma restaurants — Restaurant Flamel — Grotto Distelleria Ronco Bianchi.
+
+BASEL:
+
+Basel city: Läkerli Huus boutique for Läkerli cookies. Cathedral and area around, go to the top for views. Walk along the Rhein — witness people floating down the river in summer. Museums: Tinguely museum, paper museum, Kunstmuseum. Visit the manufacturing of the Leckerly: https://baslerleckerly.ch/en/tours/ Basel from Viking Cruise: tram 11 from St. Johanns-Tor to Basel SBB.
+
+Hotels Basel: ART House Basel Design Hotel — Radisson Blue Basel — Motel One Basel — Grand Hotel Les Trois Rois (luxury, amazing views on the river).
+
+GSTAAD:
+
+Gstaad Wispile Saanen: Go to the Wispile mountain (stops around 5pm). Villages around: Saanen, Rougemont and Château d'Oex. Lake of Lauenen (by bus) for a nice walk. Don't forget the Early Beck bakery! Get a fondue backpack from your hotel or from the Gstaad Molkerei (cheese shop) — reserve in advance with the tourism board.
+
+Hotels Saas Fee: Boutique Hotel La Gorge — Grand Hotel Walliserhof — Revier Mountain Lodge.
+
+FOOD & CULTURE:
+
+Best dishes to try: Cheese Fondue (moitié moitié) — Raclette — Röstis — Zürcher Geschnetzeltes — Malakoffs — Filets de perches.
+
+Chocolate Sprüngli Läderach: Speciality chocolate: Sprüngli is probably my favourite. People like Läderach too. Chocolate bars: Villars, Ragusa and Cailler, Lindt.
+
+Good wine Petite Arvine Heida: Petite Arvine — Heida — Dezaley.
+`;
+
+// ============================================================
+// SYSTEM PROMPT
+// ============================================================
+const SYSTEM_PROMPT = `You are Louis from TheTravelingSwiss, a warm and knowledgeable Swiss travel consultant. After Google Meet consultations, you send personalised recap emails to clients.
+
+You have access to a detailed library of text blocks covering activities, hotels, restaurants, passes, and practical tips for destinations across Switzerland. Your job is to assemble a polished draft recap email based on the consultant's keywords/notes from the call.
+
+LIBRARY:
+${LIBRARY}
+
+EMAIL RULES:
+1. Start with: "It was a pleasure speaking with you today/yesterday, here is the recap from our conversation:"
+2. Always include the SBB app mention near the top
+3. Include the recommended pass(es) with their purchase links — format as: [Reserve here](url) or similar readable format
+4. Organise content by destination/topic with clear bold headings (e.g. **Lucerne:** or **Jungfraujoch:**)
+5. Pull the exact text from the library for each keyword match — preserve all links
+6. Format links as: text (url) — e.g. "Reserve here: https://..." so they are clearly visible
+7. If hotels or restaurants are mentioned, include the recommendations for that destination
+8. Keep Louis's warm, personal, first-person tone — conversational, enthusiastic, helpful
+9. End ALWAYS with exactly: "I hope this helps!\n\nHave a great trip :)\n\nCheers,\nLouis"
+10. Do NOT invent information not in the library
+11. If a keyword doesn't match anything clearly, skip it gracefully
+12. Use line breaks generously — the email should be easy to scan
+13. For links, always write them on their own line or clearly formatted so they are easy to find and click`;
+
+// ============================================================
+// APP STATE
+// ============================================================
+let generatedEmailText = "";
+
+function updateCount() {
+  const notes = document.getElementById('notes').value;
+  document.getElementById('charCount').textContent = notes.length + " characters";
+  document.getElementById('generateBtn').disabled = !notes.trim() || !document.getElementById('apiKey').value.trim();
+}
+
+document.getElementById('apiKey').addEventListener('input', () => {
+  const notes = document.getElementById('notes').value;
+  document.getElementById('generateBtn').disabled = !notes.trim() || !document.getElementById('apiKey').value.trim();
+});
+
+function addKw(kw) {
+  const ta = document.getElementById('notes');
+  ta.value = ta.value ? ta.value.trimEnd() + ', ' + kw : kw;
+  ta.focus();
+  updateCount();
+}
+
+async function generateEmail() {
+  const notes = document.getElementById('notes').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim();
+
+  if (!notes || !apiKey) return;
+
+  const btn = document.getElementById('generateBtn');
+  const btnText = document.getElementById('btnText');
+  btn.disabled = true;
+  btnText.textContent = "Generating...";
+
+  document.getElementById('outputActions').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('emailOutput').innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Assembling your email draft…</p>
+    </div>`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "anthropic-version": "2023-06-01",
+        "x-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        messages: [{
+          role: "user",
+          content: `Here are my notes/keywords from today's consultation call. Please assemble the recap email:\n\n${notes}`
+        }]
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.content && data.content[0]) {
+      generatedEmailText = data.content[0].text;
+      renderEmail(generatedEmailText);
+      document.getElementById('outputActions').style.display = 'flex';
+    } else if (data.error) {
+      showError("API error: " + data.error.message);
+    } else {
+      showError("Something went wrong. Please try again.");
+    }
+  } catch (e) {
+    showError("Network error: " + e.message);
+  }
+
+  btn.disabled = false;
+  btnText.textContent = "✉ Generate Email Draft";
+}
+
+function renderEmail(text) {
+  // Convert markdown-style formatting to HTML
+  let html = text
+    // Escape HTML
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    // Bold headings **text:**
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    // Convert URLs to clickable links
+    .replace(/(https?:\/\/[^\s\),]+)/g, '<a href="$1" target="_blank">$1</a>')
+    // Double newlines = paragraph breaks
+    .replace(/\n\n/g, '</p><p>')
+    // Single newlines = line breaks
+    .replace(/\n/g, '<br>');
+
+  html = '<p>' + html + '</p>';
+
+  document.getElementById('emailOutput').innerHTML =
+    `<div class="email-display">${html}</div>`;
+}
+
+function showError(msg) {
+  document.getElementById('emailOutput').innerHTML = `
+    <div class="placeholder-state">
+      <div class="icon">⚠️</div>
+      <p>Could not generate email</p>
+    </div>`;
+  const errBox = document.getElementById('errorBox');
+  errBox.textContent = msg;
+  errBox.style.display = 'block';
+}
+
+function copyEmail() {
+  if (!generatedEmailText) return;
+
+  // Copy plain text version (no HTML) for pasting into Gmail
+  navigator.clipboard.writeText(generatedEmailText).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = "Copied!";
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = "Copy email";
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+}
+</script>
+</body>
+</html>
